@@ -320,6 +320,8 @@
 				DEVELOPMENT_TEAM = LYVG9RTN58;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScanneriOS/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "카메라 권한 요청";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 권한 요청";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -347,6 +349,8 @@
 				DEVELOPMENT_TEAM = LYVG9RTN58;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScanneriOS/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "카메라 권한 요청";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성 권한 요청";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

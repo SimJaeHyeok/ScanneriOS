@@ -12,15 +12,19 @@ class CaptureViewController: UIViewController {
     
     private let photoView: UIImageView = {
         let photoView = UIImageView()
+        photoView.translatesAutoresizingMaskIntoConstraints = false
+        photoView.backgroundColor = .black
         return photoView
     }()
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.addSubview(photoView)
         view.backgroundColor = .gray
         navigationController?.isToolbarHidden = false
         setupToolBarButton()
+        setConstraints()
+        displayPhoto()
     }
     
     @objc func tapCutButton() {
@@ -45,5 +49,19 @@ class CaptureViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.navigationBar.isHidden = false
+    }
+    
+    private func setConstraints() {
+        NSLayoutConstraint.activate([
+            photoView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            photoView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            photoView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            photoView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+        ])
+    }
+    
+    private func displayPhoto() {
+        guard let photo = CameraViewController.photoList.last else { return }
+        photoView.image = photo
     }
 }

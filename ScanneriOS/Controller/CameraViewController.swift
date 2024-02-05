@@ -13,12 +13,16 @@ class CameraViewController: UIViewController {
     
     private let cameraView: UIView = {
         let cameraView = UIView()
+        cameraView.translatesAutoresizingMaskIntoConstraints = false
+        cameraView.backgroundColor = .black
         return cameraView
     }()
     
     private var captureSession: AVCaptureSession!
     private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
     private var photoOutput: AVCapturePhotoOutput!
+    private var photoSetting: AVCapturePhotoSettings!
+    static var photoList: [UIImage] = []
     
     private let bottomStackView: BottomStackView = {
         let bottomStackView = BottomStackView(frame: .zero)
@@ -31,52 +35,45 @@ class CameraViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        AVCaptureDevice.requestAccess(for: .video) { (result) in
+            if result {
+                print("권한 허용 카메라 실행")
+            } else {
+                print("권한이 없습니다. 카메라 접근 권한을 허용해주세요")
+            }
+        }
         view.backgroundColor = .gray
         setConstraints()
         configurationNavigationBar()
         tapCaptureView()
+        settingPhoto()
+        setCamera()
     }
     
-    func detectRectangleAndCorrectPerspective(image: UIImage) -> UIImage? {
-        guard let ciImage = CIImage(image: image) else { return nil }
-        
-        // Create a rectangle detector
-        let options: [String: Any] = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-        guard let detector = CIDetector(ofType: CIDetectorTypeRectangle, context: nil, options: options) else { return nil }
-        
-        // Detect rectangles
-        let features = detector.features(in: ciImage)
-        guard let rectangleFeature = features.first as? CIRectangleFeature else { return nil }
-        
-        // Correct perspective
-        let perspectiveCorrection = CIFilter(name: "CIPerspectiveCorrection")
-        perspectiveCorrection?.setValue(CIVector(cgPoint: rectangleFeature.topLeft), forKey: "inputTopLeft")
-        perspectiveCorrection?.setValue(CIVector(cgPoint: rectangleFeature.topRight), forKey: "inputTopRight")
-        perspectiveCorrection?.setValue(CIVector(cgPoint: rectangleFeature.bottomRight), forKey: "inputBottomRight")
-        perspectiveCorrection?.setValue(CIVector(cgPoint: rectangleFeature.bottomLeft), forKey: "inputBottomLeft")
-        perspectiveCorrection?.setValue(ciImage, forKey: kCIInputImageKey)
-        
-        guard let outputImage = perspectiveCorrection?.outputImage else { return nil }
-        let context = CIContext(options: nil)
-        guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return nil }
-        
-        // Return the corrected image
-        return UIImage(cgImage: cgImage)
+    @objc func tapCameraButton() {
+        photoOutput.capturePhoto(with: photoSetting, delegate: self)
+        settingPhoto()
     }
     
-    @objc func didTakePhoto() {
-        
+    @objc func tapView() {
+        let captureViewController = CaptureViewController()
+        self.navigationController?.pushViewController(captureViewController, animated: true)
     }
     
     private func setConstraints() {
         view.addSubview(bottomStackView)
+        view.addSubview(cameraView)
         
         NSLayoutConstraint.activate([
             bottomStackView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.1),
             bottomStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             bottomStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 5),
             bottomStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            cameraView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            cameraView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            cameraView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            cameraView.bottomAnchor.constraint(equalTo: bottomStackView.topAnchor)
+
         ])
     }
     
@@ -89,18 +86,60 @@ class CameraViewController: UIViewController {
     
     private func tapCaptureView() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapView))
-        bottomStackView.captureView.addGestureRecognizer(tapGesture)
-        bottomStackView.captureView.isUserInteractionEnabled = true
+        bottomStackView.capturePreView.addGestureRecognizer(tapGesture)
+        bottomStackView.capturePreView.isUserInteractionEnabled = true
+    
         
-        
-    }
-    @objc func tapView() {
-        let captureViewController = CaptureViewController()
-        self.navigationController?.pushViewController(captureViewController, animated: true)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.isToolbarHidden = true
     }
+    
+    private func setCamera() {
+        captureSession = AVCaptureSession()
+        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+            print("카메라 기기 없음")
+            return
+        }
+        bottomStackView.cameraButton.addTarget(self, action: #selector(tapCameraButton), for: .touchUpInside)
+        guard let deviceInput = try? AVCaptureDeviceInput(device: camera), captureSession.canAddInput(deviceInput) else { return }
+        captureSession.addInput(deviceInput)
+        
+        photoOutput = AVCapturePhotoOutput()
+        guard captureSession.canAddOutput(photoOutput) else { return }
+        captureSession.sessionPreset = .photo
+        captureSession.addOutput(photoOutput)
+        captureSession.commitConfiguration()
+        
+        videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        DispatchQueue.main.async {
+            self.videoPreviewLayer.frame = self.cameraView.bounds
+        }
+        videoPreviewLayer?.videoGravity = .resizeAspectFill
+        self.cameraView.layer.addSublayer(videoPreviewLayer)
+        
+        DispatchQueue.global(qos: .background).async {
+            self.captureSession.startRunning()
+        }
+    }
+    
+    private func settingPhoto() {
+        photoSetting = AVCapturePhotoSettings()
+    }
+    
+}
 
+extension CameraViewController: AVCapturePhotoCaptureDelegate {
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        guard let data = photo.fileDataRepresentation() else { return }
+        
+        let photoData = UIImage(data: data)
+        
+        guard let photo = photoData else { return }
+        Self.photoList.append(photo)
+        DispatchQueue.main.async {
+            self.bottomStackView.capturePreView.image = photo
+        }
+    }
 }

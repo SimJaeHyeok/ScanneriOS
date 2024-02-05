@@ -9,7 +9,7 @@ import UIKit
 
 class BottomStackView: UIStackView {
     
-    private let cameraButton: UIButton  = {
+    let cameraButton: UIButton  = {
         let cameraButton = UIButton()
         let symbolConfig = UIImage.SymbolConfiguration(pointSize: 60)
         let image = UIImage(systemName: "camera.circle.fill", withConfiguration: symbolConfig)?.withTintColor(.black, renderingMode: .alwaysOriginal)
@@ -25,11 +25,13 @@ class BottomStackView: UIStackView {
         return saveButton
     }()
 
-    let captureView: UIImageView = {
-        let captureView = UIImageView()
-        captureView.contentMode = .scaleToFill
-        captureView.image = UIImage(named: "1.jpeg")
-        return captureView
+    let capturePreView: UIImageView = {
+        let capturePreview = UIImageView()
+        capturePreview.contentMode = .scaleToFill
+        capturePreview.image = UIImage(named: "1.jpeg")
+        capturePreview.layer.borderColor = UIColor.black.cgColor
+        capturePreview.layer.borderWidth = 1.0
+        return capturePreview
     }()
     
     override init(frame: CGRect) {
@@ -42,16 +44,15 @@ class BottomStackView: UIStackView {
         }
 
     func setConstrains() {
-        self.addArrangedSubview(captureView)
+        self.addArrangedSubview(capturePreView)
         self.addArrangedSubview(cameraButton)
         self.addArrangedSubview(saveButton)
 
         NSLayoutConstraint.activate([
-            captureView.heightAnchor.constraint(equalTo: cameraButton.heightAnchor),
-            captureView.widthAnchor.constraint(equalTo: cameraButton.widthAnchor),
+            capturePreView.heightAnchor.constraint(equalTo: cameraButton.heightAnchor),
+            capturePreView.widthAnchor.constraint(equalTo: cameraButton.widthAnchor),
             saveButton.heightAnchor.constraint(equalTo: cameraButton.heightAnchor),
             saveButton.widthAnchor.constraint(equalTo: cameraButton.widthAnchor),
-//            cameraButton.heightAnchor.constraint(equalTo: .heightAnchor)
             ])
     }
     
