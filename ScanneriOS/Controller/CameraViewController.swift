@@ -18,11 +18,6 @@ class CameraViewController: UIViewController {
         return cameraView
     }()
     
-    private var captureSession: AVCaptureSession!
-    private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
-    private var photoOutput: AVCapturePhotoOutput!
-    private var photoSetting: AVCapturePhotoSettings!
-    static var photoList: [UIImage] = []
     
     private let bottomStackView: BottomStackView = {
         let bottomStackView = BottomStackView(frame: .zero)
@@ -31,7 +26,12 @@ class CameraViewController: UIViewController {
         return bottomStackView
     }()
     
-
+    private var captureSession: AVCaptureSession!
+    private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
+    private var photoOutput: AVCapturePhotoOutput!
+    private var photoSetting: AVCapturePhotoSettings!
+    private var videoDataOutput: AVCaptureVideoDataOutput!
+    static var photoList: [UIImage] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,17 +45,22 @@ class CameraViewController: UIViewController {
         view.backgroundColor = .gray
         setConstraints()
         configurationNavigationBar()
-        tapCaptureView()
-        settingPhoto()
+        configCaptureViewTapGesture()
+        setPhotoSetting()
         setCamera()
     }
     
-    @objc func tapCameraButton() {
-        photoOutput.capturePhoto(with: photoSetting, delegate: self)
-        settingPhoto()
-    }
+    @objc private func didTappedCameraButton() {
+           guard let videoConnection = photoOutput.connection(with: .video) else { return }
+           
+           // Capture a photo with the current video orientation
+           photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+           
+           // Disable video output momentarily to prevent further processing while capturing
+           videoConnection.isEnabled = false
+       }
     
-    @objc func tapView() {
+    @objc private func didTappedCaptureView() {
         let captureViewController = CaptureViewController()
         self.navigationController?.pushViewController(captureViewController, animated: true)
     }
@@ -72,8 +77,7 @@ class CameraViewController: UIViewController {
             cameraView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             cameraView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             cameraView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            cameraView.bottomAnchor.constraint(equalTo: bottomStackView.topAnchor)
-
+            cameraView.bottomAnchor.constraint(equalTo: bottomStackView.topAnchor),
         ])
     }
     
@@ -84,12 +88,10 @@ class CameraViewController: UIViewController {
         self.navigationController?.navigationBar.tintColor = .white
     }
     
-    private func tapCaptureView() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapView))
-        bottomStackView.capturePreView.addGestureRecognizer(tapGesture)
-        bottomStackView.capturePreView.isUserInteractionEnabled = true
-    
-        
+    private func configCaptureViewTapGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTappedCaptureView))
+        bottomStackView.capturePreview.addGestureRecognizer(tapGesture)
+        bottomStackView.capturePreview.isUserInteractionEnabled = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -98,11 +100,13 @@ class CameraViewController: UIViewController {
     
     private func setCamera() {
         captureSession = AVCaptureSession()
+        
         guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
             print("카메라 기기 없음")
             return
         }
-        bottomStackView.cameraButton.addTarget(self, action: #selector(tapCameraButton), for: .touchUpInside)
+    
+        bottomStackView.cameraButton.addTarget(self, action: #selector(didTappedCameraButton), for: .touchUpInside)
         guard let deviceInput = try? AVCaptureDeviceInput(device: camera), captureSession.canAddInput(deviceInput) else { return }
         captureSession.addInput(deviceInput)
         
@@ -122,24 +126,99 @@ class CameraViewController: UIViewController {
         DispatchQueue.global(qos: .background).async {
             self.captureSession.startRunning()
         }
+        
+        videoDataOutput = AVCaptureVideoDataOutput()
+        if captureSession.canAddOutput(videoDataOutput) {
+            captureSession.addOutput(videoDataOutput)
+            videoDataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+            videoDataOutput.alwaysDiscardsLateVideoFrames = true
+        }
     }
     
-    private func settingPhoto() {
+    private func setPhotoSetting() {
         photoSetting = AVCapturePhotoSettings()
     }
+    
+    private func detectRectangle(in image: CIImage) {
+        let detector = CIDetector(ofType: CIDetectorTypeRectangle, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+        let features = detector?.features(in: image) as? [CIRectangleFeature]
+       
+
+        DispatchQueue.main.async {
+            self.cameraView.layer.sublayers?.removeSubrange(1...)
+            for feature in features ?? [] {
+                self.drawRectangle(feature: feature)
+            }
+        }
+    }
+
+    private func drawRectangle(feature: CIRectangleFeature) {
+        let shapeLayer = CAShapeLayer()
+
+        let convertedTopLeft = cameraView.layer.convert(feature.topLeft, from: videoPreviewLayer)
+        let convertedTopRight = cameraView.layer.convert(feature.topRight, from: videoPreviewLayer)
+        let convertedBottomLeft = cameraView.layer.convert(feature.bottomLeft, from: videoPreviewLayer)
+        let convertedBottomRight = cameraView.layer.convert(feature.bottomRight, from: videoPreviewLayer)
+
+        let path = UIBezierPath()
+        path.move(to: convertedTopLeft)
+        path.addLine(to: convertedTopRight)
+        path.addLine(to: convertedBottomRight)
+        path.addLine(to: convertedBottomLeft)
+        path.close()
+
+        shapeLayer.path = path.cgPath
+        shapeLayer.fillColor = UIColor.clear.cgColor
+        shapeLayer.strokeColor = UIColor.red.cgColor
+        shapeLayer.lineWidth = 2
+
+        cameraView.layer.addSublayer(shapeLayer)
+    }
+    
+    private func adjustRectForPreview(_ rect: CGRect, in previewRect: CGRect) -> CGRect {
+        let scaleX = previewRect.width / videoPreviewLayer.bounds.width
+        let scaleY = previewRect.height / videoPreviewLayer.bounds.height
+
+        let transformedRect = rect.applying(CGAffineTransform(scaleX: scaleX, y: scaleY))
+
+        let offsetY = (previewRect.height - videoPreviewLayer.bounds.height * scaleY) / 2.0
+        let adjustedRect = transformedRect.offsetBy(dx: 0, dy: offsetY)
+
+        return adjustedRect
+    }
+    
+    private func processCapturedImage(_ image: UIImage) {
+           // Add your logic to handle the captured image, for example, displaying or saving it
+           print("Captured image processed")
+       }
+    
+    
     
 }
 
 extension CameraViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        guard let data = photo.fileDataRepresentation() else { return }
-        
-        let photoData = UIImage(data: data)
-        
-        guard let photo = photoData else { return }
-        Self.photoList.append(photo)
-        DispatchQueue.main.async {
-            self.bottomStackView.capturePreView.image = photo
+        guard let data = photo.fileDataRepresentation(), let capturedImage = UIImage(data: data) else {
+            print("Failed to convert AVCapturePhoto to UIImage")
+            return
         }
+
+        // Process the captured image (optional)
+        processCapturedImage(capturedImage)
+        CameraViewController.photoList.append(capturedImage)
+        // Display the captured image in capturePreView
+        DispatchQueue.main.async {
+            self.bottomStackView.capturePreview.image = capturedImage
+        }
+    }
+}
+
+extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        
+        // Detect and draw rectangles
+        detectRectangle(in: ciImage)
     }
 }

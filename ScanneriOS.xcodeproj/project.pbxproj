@@ -44,7 +44,7 @@
 		E3B6A2F02B6A32AA00C9B555 = {
 			isa = PBXGroup;
 			children = (
-				E3B6A2FB2B6A32AA00C9B555 /* MagicIDR */,
+				E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */,
 				E3B6A2FA2B6A32AA00C9B555 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -57,7 +57,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E3B6A2FB2B6A32AA00C9B555 /* MagicIDR */ = {
+		E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */ = {
 			isa = PBXGroup;
 			children = (
 				E3B6A31C2B6CF78D00C9B555 /* Model */,
@@ -69,7 +69,6 @@
 				E3B6A3072B6A32B600C9B555 /* LaunchScreen.storyboard */,
 				E3B6A30A2B6A32B600C9B555 /* Info.plist */,
 			);
-			name = MagicIDR;
 			path = ScanneriOS;
 			sourceTree = "<group>";
 		};

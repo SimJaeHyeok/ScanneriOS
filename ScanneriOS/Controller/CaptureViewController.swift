@@ -35,7 +35,7 @@ class CaptureViewController: UIViewController {
     func setupToolBarButton() {
         let deleteButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: nil)
         deleteButton.tintColor = .white
-        let completeButton = UIBarButtonItem(title: "완료", style: .plain, target: self, action: nil)
+        let completeButton = UIBarButtonItem(title: "반시계", style: .plain, target: self, action: nil)
         completeButton.tintColor = .white
         let symbolConfiguration = UIImage.SymbolConfiguration(scale: .medium)
         let cropSymbol = UIImage(systemName: "scissors", withConfiguration: symbolConfiguration)?.withTintColor(.white, renderingMode: .alwaysOriginal)

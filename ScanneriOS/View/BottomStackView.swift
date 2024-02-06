@@ -25,7 +25,7 @@ class BottomStackView: UIStackView {
         return saveButton
     }()
 
-    let capturePreView: UIImageView = {
+    let capturePreview: UIImageView = {
         let capturePreview = UIImageView()
         capturePreview.contentMode = .scaleToFill
         capturePreview.image = UIImage(named: "1.jpeg")
@@ -44,13 +44,13 @@ class BottomStackView: UIStackView {
         }
 
     func setConstrains() {
-        self.addArrangedSubview(capturePreView)
+        self.addArrangedSubview(capturePreview)
         self.addArrangedSubview(cameraButton)
         self.addArrangedSubview(saveButton)
 
         NSLayoutConstraint.activate([
-            capturePreView.heightAnchor.constraint(equalTo: cameraButton.heightAnchor),
-            capturePreView.widthAnchor.constraint(equalTo: cameraButton.widthAnchor),
+            capturePreview.heightAnchor.constraint(equalTo: cameraButton.heightAnchor),
+            capturePreview.widthAnchor.constraint(equalTo: cameraButton.widthAnchor),
             saveButton.heightAnchor.constraint(equalTo: cameraButton.heightAnchor),
             saveButton.widthAnchor.constraint(equalTo: cameraButton.widthAnchor),
             ])

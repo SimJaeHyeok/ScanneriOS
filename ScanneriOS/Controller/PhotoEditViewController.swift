@@ -8,14 +8,6 @@
 import UIKit
 
 class PhotoEditViewController: UIViewController {
-
-    private let stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.backgroundColor = .gray
-        stackView.distribution = .fillEqually
-        return stackView
-    }()
     
     private let backButton: UIButton = {
         let backButton = UIButton()
@@ -35,28 +27,36 @@ class PhotoEditViewController: UIViewController {
         return checkButton
     }()
     
+    private let photoEditView: UIImageView = {
+        let photoEditView = UIImageView()
+        photoEditView.translatesAutoresizingMaskIntoConstraints = false
+        return photoEditView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .gray
         navigationController?.navigationBar.isHidden = true
         navigationController?.isToolbarHidden = false
         setupToolBarButton()
+        setLayout()
+        setConstraints()
     }
     
     func setLayout() {
-        stackView.addArrangedSubview(backButton)
-        stackView.addArrangedSubview(checkButton)
-        view.addSubview(stackView)
+        view.addSubview(photoEditView)
+        photoEditView.backgroundColor = .black
     }
     
     func setConstraints() {
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            stackView.heightAnchor.constraint(equalTo: checkButton.heightAnchor),
-            stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            photoEditView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            photoEditView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            photoEditView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            photoEditView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
         ])
-        stackView.spacing = view.frame.width * 0.3
+        guard let photo = CameraViewController.photoList.last else { return }
+        photoEditView.image = photo
     }
     
     @objc func tapBackButton() {
