@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E30CF4552B74C7E800AB6B8F /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */; };
 		E3B6A2FD2B6A32AA00C9B555 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */; };
 		E3B6A2FF2B6A32AA00C9B555 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */; };
 		E3B6A3012B6A32AA00C9B555 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A3002B6A32AA00C9B555 /* CameraViewController.swift */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
 		E3B6A2F92B6A32AA00C9B555 /* ScanneriOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanneriOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -41,9 +43,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E30CF4532B74C7D200AB6B8F /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
 		E3B6A2F02B6A32AA00C9B555 = {
 			isa = PBXGroup;
 			children = (
+				E30CF4532B74C7D200AB6B8F /* Extension */,
 				E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */,
 				E3B6A2FA2B6A32AA00C9B555 /* Products */,
 			);
@@ -168,6 +179,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B6A3012B6A32AA00C9B555 /* CameraViewController.swift in Sources */,
+				E30CF4552B74C7E800AB6B8F /* UIImage+Extension.swift in Sources */,
 				E3B6A2FD2B6A32AA00C9B555 /* AppDelegate.swift in Sources */,
 				E3B6A3162B6BBBA100C9B555 /* BottomStackView.swift in Sources */,
 				E3B6A2FF2B6A32AA00C9B555 /* SceneDelegate.swift in Sources */,

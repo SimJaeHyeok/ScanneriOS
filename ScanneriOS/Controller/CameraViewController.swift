@@ -29,10 +29,8 @@ class CameraViewController: UIViewController {
     private var captureSession: AVCaptureSession!
     private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
     private var photoOutput: AVCapturePhotoOutput!
-    private var photoSetting: AVCapturePhotoSettings!
     private var videoDataOutput: AVCaptureVideoDataOutput!
     static var photoList: [UIImage] = []
-    var detectedRectangle: (topLeft: CGPoint, topRight: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,23 +45,16 @@ class CameraViewController: UIViewController {
         setConstraints()
         configurationNavigationBar()
         configurationCaptureViewTapGesture()
-        setPhotoSetting()
         setCamera()
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.isToolbarHidden = true
     }
     
     @objc private func didTappedCameraButton() {
         guard let videoConnection = photoOutput.connection(with: .video) else { return }
-
-        if videoConnection.isEnabled && videoConnection.isActive {
-            // Capture a photo with the current video orientation
-            photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
-
-            // Disable video output momentarily to prevent further processing while capturing
-            videoConnection.isEnabled = false
-        }
+        photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
     }
     
     @objc private func didTappedCaptureView() {
@@ -108,7 +99,7 @@ class CameraViewController: UIViewController {
             print("카메라 기기 없음")
             return
         }
-    
+        
         bottomStackView.cameraButton.addTarget(self, action: #selector(didTappedCameraButton), for: .touchUpInside)
         guard let deviceInput = try? AVCaptureDeviceInput(device: camera), captureSession.canAddInput(deviceInput) else { return }
         captureSession.addInput(deviceInput)
@@ -138,25 +129,27 @@ class CameraViewController: UIViewController {
         }
     }
     
-    private func setPhotoSetting() {
-        photoSetting = AVCapturePhotoSettings()
-    }
-    
-    private func detectRectangle(in image: CIImage) {
-        let detector = CIDetector(ofType: CIDetectorTypeRectangle, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-        let features = detector?.features(in: image) as? [CIRectangleFeature]
-        
+    private func displayRectangle(in image: CIImage) {
+        guard let feature = detectRectangle(in: image) else { return }
+        // 피쳐 == 디텍터 다시 그리지 않게..
         DispatchQueue.main.async {
             self.cameraView.layer.sublayers?.removeSubrange(1...)
-            for feature in features ?? [] {
-                self.drawRectangle(feature: feature, imageSize: image.extent.size, viewSize: self.cameraView.bounds.size)
-            }
+            self.drawRectangle(feature: feature, imageSize: image.extent.size, viewSize: self.cameraView.bounds.size)
+            
         }
+    }
+    
+    private func detectRectangle(in image: CIImage) -> CIRectangleFeature?  {
+        let detector = CIDetector(ofType: CIDetectorTypeRectangle, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+        let features = detector?.features(in: image) as? [CIRectangleFeature]
+        guard let features = features, let feature = features.first  else {
+            return nil
+        }
+        return feature
     }
     
     private func drawRectangle(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) {
         let transformedFeature = translateFeatureCoordinate(feature: feature, imageSize: imageSize, viewSize: viewSize)
-        
         let shapeLayer = CAShapeLayer()
         shapeLayer.frame = cameraView.bounds
         shapeLayer.strokeColor = UIColor(named: "SubColor")?.cgColor
@@ -164,50 +157,72 @@ class CameraViewController: UIViewController {
         shapeLayer.opacity = 0.4
         shapeLayer.fillColor = UIColor(named: "MainColor")?.cgColor
         
+        
+        
+        
         let path = UIBezierPath()
-        path.move(to: transformedFeature.topLeft)
-        path.addLine(to: transformedFeature.topRight)
-        path.addLine(to: transformedFeature.bottomRight)
-        path.addLine(to: transformedFeature.bottomLeft)
+        path.move(to: transformedFeature[0])
+        path.addLine(to: transformedFeature[1])
+        path.addLine(to: transformedFeature[2])
+        path.addLine(to: transformedFeature[3])
         path.close()
         
         shapeLayer.path = path.cgPath
         cameraView.layer.addSublayer(shapeLayer)
     }
     
-    private func translateFeatureCoordinate(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) -> (topLeft: CGPoint, topRight: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint) {
+    private func translateFeatureCoordinate(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) -> [CGPoint] {
         let scaleX = viewSize.width / imageSize.width
         let scaleY = viewSize.height / imageSize.height
-                                 
-        let transformPoint: (CGPoint) -> CGPoint = { point in
+        
+        let featurePoint = [feature.topLeft, feature.topRight, feature.bottomRight, feature.bottomLeft] .map {
+            var x = $0.x * scaleX
+            let y = viewSize.height - ($0.y * scaleY)
             
-            let x = point.x * scaleX
-            let y = viewSize.height - point.y * scaleY
+            if $0 == feature.topLeft || $0 == feature.bottomLeft {
+                x -= 20
+            } else {
+                x += 20
+            }
             return CGPoint(x: x, y: y)
         }
         
-        var transTopLeft = transformPoint(feature.topLeft)
-        var transTopRight = transformPoint(feature.topRight)
-        var transBottomLeft = transformPoint(feature.bottomLeft)
-        var transBottomRight = transformPoint(feature.bottomRight)
-        
-        transTopLeft.x -= 20
-        transTopRight.x += 20
-        transBottomLeft.x -= 20
-        transBottomRight.x += 20
-        
-        return ( transTopLeft, transTopRight, transBottomLeft, transBottomRight)
+        return featurePoint
     }
+    
+    private func getPrepectiveImage(ciImage: CIImage, feature: CIRectangleFeature) -> CIImage? {
+        guard let perspectiveCorrection = CIFilter(name: "CIPerspectiveCorrection") else { return ciImage }
+        perspectiveCorrection.setValue(CIVector(cgPoint: feature.topLeft), forKey: "inputTopLeft")
+        perspectiveCorrection.setValue(CIVector(cgPoint: feature.topRight), forKey: "inputTopRight")
+        perspectiveCorrection.setValue(CIVector(cgPoint: feature.bottomRight), forKey: "inputBottomRight")
+        perspectiveCorrection.setValue(CIVector(cgPoint: feature.bottomLeft), forKey: "inputBottomLeft")
+        perspectiveCorrection.setValue(ciImage, forKey: kCIInputImageKey)
+        
+        guard let outputImage = perspectiveCorrection.outputImage else { return nil }
+        
+        return outputImage
+    
+    }
+    
 }
 
 
 extension CameraViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        guard let data = photo.fileDataRepresentation(), let capturedImage = UIImage(data: data) else {
+        guard let data = photo.fileDataRepresentation(), let capturedImage = CIImage(data: data) else {
             print("Failed to convert AVCapturePhoto to UIImage")
             return
         }
-
+        guard let feature = detectRectangle(in: capturedImage) else { return }
+        
+        let croppedImage = getPrepectiveImage(ciImage: capturedImage, feature: feature)
+        let dqsd = UIImage(ciImage: croppedImage!).rotate(degrees: 90)
+        CameraViewController.photoList.append(dqsd)
+        DispatchQueue.main.async {
+            self.bottomStackView.capturePreview.image = CameraViewController.photoList.last
+        }
+        
+        
         // Enable video output after capturing
         if let videoConnection = output.connection(with: .video) {
             videoConnection.isEnabled = true
@@ -219,15 +234,15 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         
         DispatchQueue.main.async {
-                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                        let orientation = windowScene.interfaceOrientation
-                        output.connection(with: .video)?.videoOrientation = AVCaptureVideoOrientation(rawValue: orientation.rawValue) ?? .portrait
-                    }
-                }
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                let orientation = windowScene.interfaceOrientation
+                output.connection(with: .video)?.videoOrientation = AVCaptureVideoOrientation(rawValue: orientation.rawValue) ?? .portrait
+            }
+        }
         
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-    
-        detectRectangle(in: ciImage)
+        
+        displayRectangle(in: ciImage)
     }
 }
