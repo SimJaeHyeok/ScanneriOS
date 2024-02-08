@@ -32,6 +32,7 @@ class CameraViewController: UIViewController {
     private var photoSetting: AVCapturePhotoSettings!
     private var videoDataOutput: AVCaptureVideoDataOutput!
     static var photoList: [UIImage] = []
+    var detectedRectangle: (topLeft: CGPoint, topRight: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,20 +46,25 @@ class CameraViewController: UIViewController {
         view.backgroundColor = .gray
         setConstraints()
         configurationNavigationBar()
-        configCaptureViewTapGesture()
+        configurationCaptureViewTapGesture()
         setPhotoSetting()
         setCamera()
     }
+    override func viewWillAppear(_ animated: Bool) {
+        navigationController?.isToolbarHidden = true
+    }
     
     @objc private func didTappedCameraButton() {
-           guard let videoConnection = photoOutput.connection(with: .video) else { return }
-           
-           // Capture a photo with the current video orientation
-           photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
-           
-           // Disable video output momentarily to prevent further processing while capturing
-           videoConnection.isEnabled = false
-       }
+        guard let videoConnection = photoOutput.connection(with: .video) else { return }
+
+        if videoConnection.isEnabled && videoConnection.isActive {
+            // Capture a photo with the current video orientation
+            photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+
+            // Disable video output momentarily to prevent further processing while capturing
+            videoConnection.isEnabled = false
+        }
+    }
     
     @objc private func didTappedCaptureView() {
         let captureViewController = CaptureViewController()
@@ -88,15 +94,12 @@ class CameraViewController: UIViewController {
         self.navigationController?.navigationBar.tintColor = .white
     }
     
-    private func configCaptureViewTapGesture() {
+    private func configurationCaptureViewTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTappedCaptureView))
         bottomStackView.capturePreview.addGestureRecognizer(tapGesture)
         bottomStackView.capturePreview.isUserInteractionEnabled = true
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        navigationController?.isToolbarHidden = true
-    }
     
     private func setCamera() {
         captureSession = AVCaptureSession()
@@ -142,59 +145,61 @@ class CameraViewController: UIViewController {
     private func detectRectangle(in image: CIImage) {
         let detector = CIDetector(ofType: CIDetectorTypeRectangle, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
         let features = detector?.features(in: image) as? [CIRectangleFeature]
-       
-
+        
         DispatchQueue.main.async {
             self.cameraView.layer.sublayers?.removeSubrange(1...)
             for feature in features ?? [] {
-                self.drawRectangle(feature: feature)
+                self.drawRectangle(feature: feature, imageSize: image.extent.size, viewSize: self.cameraView.bounds.size)
             }
         }
     }
-
-    private func drawRectangle(feature: CIRectangleFeature) {
+    
+    private func drawRectangle(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) {
+        let transformedFeature = translateFeatureCoordinate(feature: feature, imageSize: imageSize, viewSize: viewSize)
+        
         let shapeLayer = CAShapeLayer()
-
-        let convertedTopLeft = cameraView.layer.convert(feature.topLeft, from: videoPreviewLayer)
-        let convertedTopRight = cameraView.layer.convert(feature.topRight, from: videoPreviewLayer)
-        let convertedBottomLeft = cameraView.layer.convert(feature.bottomLeft, from: videoPreviewLayer)
-        let convertedBottomRight = cameraView.layer.convert(feature.bottomRight, from: videoPreviewLayer)
-
+        shapeLayer.frame = cameraView.bounds
+        shapeLayer.strokeColor = UIColor(named: "SubColor")?.cgColor
+        shapeLayer.lineWidth = 2.0
+        shapeLayer.opacity = 0.4
+        shapeLayer.fillColor = UIColor(named: "MainColor")?.cgColor
+        
         let path = UIBezierPath()
-        path.move(to: convertedTopLeft)
-        path.addLine(to: convertedTopRight)
-        path.addLine(to: convertedBottomRight)
-        path.addLine(to: convertedBottomLeft)
+        path.move(to: transformedFeature.topLeft)
+        path.addLine(to: transformedFeature.topRight)
+        path.addLine(to: transformedFeature.bottomRight)
+        path.addLine(to: transformedFeature.bottomLeft)
         path.close()
-
+        
         shapeLayer.path = path.cgPath
-        shapeLayer.fillColor = UIColor.clear.cgColor
-        shapeLayer.strokeColor = UIColor.red.cgColor
-        shapeLayer.lineWidth = 2
-
         cameraView.layer.addSublayer(shapeLayer)
     }
     
-    private func adjustRectForPreview(_ rect: CGRect, in previewRect: CGRect) -> CGRect {
-        let scaleX = previewRect.width / videoPreviewLayer.bounds.width
-        let scaleY = previewRect.height / videoPreviewLayer.bounds.height
-
-        let transformedRect = rect.applying(CGAffineTransform(scaleX: scaleX, y: scaleY))
-
-        let offsetY = (previewRect.height - videoPreviewLayer.bounds.height * scaleY) / 2.0
-        let adjustedRect = transformedRect.offsetBy(dx: 0, dy: offsetY)
-
-        return adjustedRect
+    private func translateFeatureCoordinate(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) -> (topLeft: CGPoint, topRight: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint) {
+        let scaleX = viewSize.width / imageSize.width
+        let scaleY = viewSize.height / imageSize.height
+                                 
+        let transformPoint: (CGPoint) -> CGPoint = { point in
+            
+            let x = point.x * scaleX
+            let y = viewSize.height - point.y * scaleY
+            return CGPoint(x: x, y: y)
+        }
+        
+        var transTopLeft = transformPoint(feature.topLeft)
+        var transTopRight = transformPoint(feature.topRight)
+        var transBottomLeft = transformPoint(feature.bottomLeft)
+        var transBottomRight = transformPoint(feature.bottomRight)
+        
+        transTopLeft.x -= 20
+        transTopRight.x += 20
+        transBottomLeft.x -= 20
+        transBottomRight.x += 20
+        
+        return ( transTopLeft, transTopRight, transBottomLeft, transBottomRight)
     }
-    
-    private func processCapturedImage(_ image: UIImage) {
-           // Add your logic to handle the captured image, for example, displaying or saving it
-           print("Captured image processed")
-       }
-    
-    
-    
 }
+
 
 extension CameraViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
@@ -203,22 +208,26 @@ extension CameraViewController: AVCapturePhotoCaptureDelegate {
             return
         }
 
-        // Process the captured image (optional)
-        processCapturedImage(capturedImage)
-        CameraViewController.photoList.append(capturedImage)
-        // Display the captured image in capturePreView
-        DispatchQueue.main.async {
-            self.bottomStackView.capturePreview.image = capturedImage
+        // Enable video output after capturing
+        if let videoConnection = output.connection(with: .video) {
+            videoConnection.isEnabled = true
         }
     }
 }
 
 extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        
+        DispatchQueue.main.async {
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                        let orientation = windowScene.interfaceOrientation
+                        output.connection(with: .video)?.videoOrientation = AVCaptureVideoOrientation(rawValue: orientation.rawValue) ?? .portrait
+                    }
+                }
+        
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        
-        // Detect and draw rectangles
+    
         detectRectangle(in: ciImage)
     }
 }
