@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PhotoEditViewController: UIViewController {
+class RepointViewController: UIViewController {
     
     private let backButton: UIButton = {
         let backButton = UIButton()
@@ -55,7 +55,7 @@ class PhotoEditViewController: UIViewController {
             photoEditView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             photoEditView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
         ])
-        guard let photo = CameraViewController.photoList.last else { return }
+        guard let photo = CameraViewController.originalImageList.last else { return }
         photoEditView.image = photo
     }
     

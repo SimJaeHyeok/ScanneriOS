@@ -1,36 +1,26 @@
 //
 //  ViewController.swift
-//  MagicIIDR
+//  ScanneriOS
 //
 //  Created by JaeHyeok Sim on 1/31/24.
 //
 
-import UIKit
-import CoreImage
 import AVFoundation
+import CoreImage
+import UIKit
 
 class CameraViewController: UIViewController {
     
-    private let cameraView: UIView = {
-        let cameraView = UIView()
-        cameraView.translatesAutoresizingMaskIntoConstraints = false
-        cameraView.backgroundColor = .black
-        return cameraView
-    }()
+    private let cameraView = CameraView()
     
+//    private var captureSession: AVCaptureSession!
+//    private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
+//    private var photoOutput: AVCapturePhotoOutput!
+//    private var videoDataOutput: AVCaptureVideoDataOutput!
+    private var cameraManager: Capturable!
     
-    private let bottomStackView: BottomStackView = {
-        let bottomStackView = BottomStackView(frame: .zero)
-        bottomStackView.translatesAutoresizingMaskIntoConstraints = false
-        bottomStackView.distribution = .equalSpacing
-        return bottomStackView
-    }()
-    
-    private var captureSession: AVCaptureSession!
-    private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
-    private var photoOutput: AVCapturePhotoOutput!
-    private var videoDataOutput: AVCaptureVideoDataOutput!
-    static var photoList: [UIImage] = []
+    static var croppedImageList: [UIImage] = []
+    static var originalImageList: [UIImage] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,40 +32,24 @@ class CameraViewController: UIViewController {
             }
         }
         view.backgroundColor = .gray
+        cameraManager = CameraManager(delegate: self)
         setConstraints()
+        setupToolBarButton()
         configurationNavigationBar()
-        configurationCaptureViewTapGesture()
-        setCamera()
+        cameraManager.setCamera(cameraView: cameraView)
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        navigationController?.isToolbarHidden = true
+        navigationController?.isToolbarHidden = false
     }
     
-    @objc private func didTappedCameraButton() {
-        guard let videoConnection = photoOutput.connection(with: .video) else { return }
-        photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+    @objc private func cameraButtonDidTap() {
+        cameraManager.startCapture()
     }
     
-    @objc private func didTappedCaptureView() {
+    @objc private func captureViewDidTap() {
         let captureViewController = CaptureViewController()
         self.navigationController?.pushViewController(captureViewController, animated: true)
-    }
-    
-    private func setConstraints() {
-        view.addSubview(bottomStackView)
-        view.addSubview(cameraView)
-        
-        NSLayoutConstraint.activate([
-            bottomStackView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.1),
-            bottomStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            bottomStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 5),
-            bottomStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            cameraView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            cameraView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            cameraView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            cameraView.bottomAnchor.constraint(equalTo: bottomStackView.topAnchor),
-        ])
     }
     
     private func configurationNavigationBar() {
@@ -84,59 +58,46 @@ class CameraViewController: UIViewController {
         self.navigationController?.navigationBar.backgroundColor = .gray
         self.navigationController?.navigationBar.tintColor = .white
     }
-    
-    private func configurationCaptureViewTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTappedCaptureView))
-        bottomStackView.capturePreview.addGestureRecognizer(tapGesture)
-        bottomStackView.capturePreview.isUserInteractionEnabled = true
+
+    func setupToolBarButton() {
+        navigationController?.isToolbarHidden = false
+        
+        let previewButton = UIButton(type: .custom)
+        if let lastImage = CameraViewController.croppedImageList.last {
+            let resizedImage = lastImage.resizeImage(targetSize: CGSize(width: 50, height: 50))
+            previewButton.setImage(resizedImage, for: .normal)
+        } else {
+            let originalImage = UIImage(named: "1.jpg")
+            let resizedImage = originalImage?.resizeImage(targetSize: CGSize(width: 50, height: 50))
+            previewButton.setImage(resizedImage, for: .normal)
+        }
+        previewButton.addTarget(self, action: #selector(captureViewDidTap), for: .touchUpInside)
+        
+        let previewBarButtonItem = UIBarButtonItem(customView: previewButton)
+        
+        let deleteButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: nil)
+        deleteButton.tintColor = .white
+        let symbolConfiguration = UIImage.SymbolConfiguration(scale: .large)
+        let cameraButton = UIBarButtonItem(image: UIImage(systemName: "camera.viewfinder", withConfiguration: symbolConfiguration), style: .done, target: self, action: #selector(cameraButtonDidTap))
+        cameraButton.tintColor = .white
+
+        let saveButton = UIBarButtonItem(title: "저장", style: .done, target: self, action: nil)
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let barItems = [previewBarButtonItem, flexibleSpace, cameraButton, flexibleSpace, saveButton]
+        
+        self.toolbarItems = barItems
+        
     }
     
-    
-    private func setCamera() {
-        captureSession = AVCaptureSession()
-        
-        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            print("카메라 기기 없음")
-            return
-        }
-        
-        bottomStackView.cameraButton.addTarget(self, action: #selector(didTappedCameraButton), for: .touchUpInside)
-        guard let deviceInput = try? AVCaptureDeviceInput(device: camera), captureSession.canAddInput(deviceInput) else { return }
-        captureSession.addInput(deviceInput)
-        
-        photoOutput = AVCapturePhotoOutput()
-        guard captureSession.canAddOutput(photoOutput) else { return }
-        captureSession.sessionPreset = .photo
-        captureSession.addOutput(photoOutput)
-        captureSession.commitConfiguration()
-        
-        videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        DispatchQueue.main.async {
-            self.videoPreviewLayer.frame = self.cameraView.bounds
-        }
-        videoPreviewLayer?.videoGravity = .resizeAspectFill
-        self.cameraView.layer.addSublayer(videoPreviewLayer)
-        
-        DispatchQueue.global(qos: .background).async {
-            self.captureSession.startRunning()
-        }
-        
-        videoDataOutput = AVCaptureVideoDataOutput()
-        if captureSession.canAddOutput(videoDataOutput) {
-            captureSession.addOutput(videoDataOutput)
-            videoDataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
-            videoDataOutput.alwaysDiscardsLateVideoFrames = true
-        }
-    }
-    
-    private func displayRectangle(in image: CIImage) {
-        guard let feature = detectRectangle(in: image) else { return }
-        // 피쳐 == 디텍터 다시 그리지 않게..
-        DispatchQueue.main.async {
-            self.cameraView.layer.sublayers?.removeSubrange(1...)
-            self.drawRectangle(feature: feature, imageSize: image.extent.size, viewSize: self.cameraView.bounds.size)
-            
-        }
+    private func setConstraints() {
+        view.addSubview(cameraView)
+        cameraView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            cameraView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            cameraView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            cameraView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            cameraView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+        ])
     }
     
     private func detectRectangle(in image: CIImage) -> CIRectangleFeature?  {
@@ -148,47 +109,7 @@ class CameraViewController: UIViewController {
         return feature
     }
     
-    private func drawRectangle(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) {
-        let transformedFeature = translateFeatureCoordinate(feature: feature, imageSize: imageSize, viewSize: viewSize)
-        let shapeLayer = CAShapeLayer()
-        shapeLayer.frame = cameraView.bounds
-        shapeLayer.strokeColor = UIColor(named: "SubColor")?.cgColor
-        shapeLayer.lineWidth = 2.0
-        shapeLayer.opacity = 0.4
-        shapeLayer.fillColor = UIColor(named: "MainColor")?.cgColor
-        
-        
-        
-        
-        let path = UIBezierPath()
-        path.move(to: transformedFeature[0])
-        path.addLine(to: transformedFeature[1])
-        path.addLine(to: transformedFeature[2])
-        path.addLine(to: transformedFeature[3])
-        path.close()
-        
-        shapeLayer.path = path.cgPath
-        cameraView.layer.addSublayer(shapeLayer)
-    }
-    
-    private func translateFeatureCoordinate(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) -> [CGPoint] {
-        let scaleX = viewSize.width / imageSize.width
-        let scaleY = viewSize.height / imageSize.height
-        
-        let featurePoint = [feature.topLeft, feature.topRight, feature.bottomRight, feature.bottomLeft] .map {
-            var x = $0.x * scaleX
-            let y = viewSize.height - ($0.y * scaleY)
-            
-            if $0 == feature.topLeft || $0 == feature.bottomLeft {
-                x -= 20
-            } else {
-                x += 20
-            }
-            return CGPoint(x: x, y: y)
-        }
-        
-        return featurePoint
-    }
+
     
     private func getPrepectiveImage(ciImage: CIImage, feature: CIRectangleFeature) -> CIImage? {
         guard let perspectiveCorrection = CIFilter(name: "CIPerspectiveCorrection") else { return ciImage }
@@ -201,48 +122,34 @@ class CameraViewController: UIViewController {
         guard let outputImage = perspectiveCorrection.outputImage else { return nil }
         
         return outputImage
-    
+        
     }
-    
 }
 
-
-extension CameraViewController: AVCapturePhotoCaptureDelegate {
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        guard let data = photo.fileDataRepresentation(), let capturedImage = CIImage(data: data) else {
-            print("Failed to convert AVCapturePhoto to UIImage")
-            return
-        }
+extension CameraViewController: CameraManagerDelegate {
+    
+    func recieveImage(capturedImage: CIImage) {
         guard let feature = detectRectangle(in: capturedImage) else { return }
         
         let croppedImage = getPrepectiveImage(ciImage: capturedImage, feature: feature)
-        let dqsd = UIImage(ciImage: croppedImage!).rotate(degrees: 90)
-        CameraViewController.photoList.append(dqsd)
+        let rotatedImage = UIImage(ciImage: croppedImage!).rotate(degrees: 90)
+        let previewImageThumbnailImage = UIImage(ciImage: croppedImage!).rotate(degrees: 90).resizeImage(targetSize: CGSize(width: 50, height: 50))
+        
+        CameraViewController.croppedImageList.append(rotatedImage)
         DispatchQueue.main.async {
-            self.bottomStackView.capturePreview.image = CameraViewController.photoList.last
-        }
-        
-        
-        // Enable video output after capturing
-        if let videoConnection = output.connection(with: .video) {
-            videoConnection.isEnabled = true
-        }
-    }
-}
-
-extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
-        DispatchQueue.main.async {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                let orientation = windowScene.interfaceOrientation
-                output.connection(with: .video)?.videoOrientation = AVCaptureVideoOrientation(rawValue: orientation.rawValue) ?? .portrait
+            if let button = self.toolbarItems?.first?.customView as? UIButton {
+                button.setImage(previewImageThumbnailImage, for: .normal)
             }
         }
-        
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        
-        displayRectangle(in: ciImage)
     }
+    func displayRectangle(in image: CIImage) {
+        guard let feature = detectRectangle(in: image) else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.cameraView.layer.sublayers?.removeSubrange(1...)
+            self.cameraView.drawRectangle(feature: feature, imageSize: image.extent.size, viewSize: self.cameraView.bounds.size)
+        }
+    }
+    
+    
 }

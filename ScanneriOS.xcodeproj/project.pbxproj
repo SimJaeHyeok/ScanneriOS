@@ -8,18 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		E30CF4552B74C7E800AB6B8F /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */; };
+		E32BE5602B7B316D00F98601 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32BE55F2B7B316D00F98601 /* CameraView.swift */; };
 		E3B6A2FD2B6A32AA00C9B555 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */; };
 		E3B6A2FF2B6A32AA00C9B555 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */; };
 		E3B6A3012B6A32AA00C9B555 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A3002B6A32AA00C9B555 /* CameraViewController.swift */; };
 		E3B6A3062B6A32B600C9B555 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E3B6A3052B6A32B600C9B555 /* Assets.xcassets */; };
 		E3B6A3092B6A32B600C9B555 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E3B6A3072B6A32B600C9B555 /* LaunchScreen.storyboard */; };
-		E3B6A3162B6BBBA100C9B555 /* BottomStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A3152B6BBBA100C9B555 /* BottomStackView.swift */; };
 		E3B6A31B2B6C07BC00C9B555 /* CaptureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A31A2B6C07BC00C9B555 /* CaptureViewController.swift */; };
-		E3B6A31E2B6CF90500C9B555 /* PhotoEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A31D2B6CF90500C9B555 /* PhotoEditViewController.swift */; };
+		E3B6A31E2B6CF90500C9B555 /* RepointViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A31D2B6CF90500C9B555 /* RepointViewController.swift */; };
+		E3BB85492B7A90DE000D7E18 /* CameraManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB85482B7A90DE000D7E18 /* CameraManagerDelegate.swift */; };
+		E3BF9C962B7A1C6500F2BE8B /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BF9C952B7A1C6500F2BE8B /* CameraManager.swift */; };
+		E3BF9C992B7A1C8E00F2BE8B /* Capturable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BF9C982B7A1C8E00F2BE8B /* Capturable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
+		E32BE55F2B7B316D00F98601 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		E3B6A2F92B6A32AA00C9B555 /* ScanneriOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanneriOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -27,9 +31,11 @@
 		E3B6A3052B6A32B600C9B555 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E3B6A3082B6A32B600C9B555 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E3B6A30A2B6A32B600C9B555 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E3B6A3152B6BBBA100C9B555 /* BottomStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomStackView.swift; sourceTree = "<group>"; };
 		E3B6A31A2B6C07BC00C9B555 /* CaptureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureViewController.swift; sourceTree = "<group>"; };
-		E3B6A31D2B6CF90500C9B555 /* PhotoEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoEditViewController.swift; sourceTree = "<group>"; };
+		E3B6A31D2B6CF90500C9B555 /* RepointViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepointViewController.swift; sourceTree = "<group>"; };
+		E3BB85482B7A90DE000D7E18 /* CameraManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManagerDelegate.swift; sourceTree = "<group>"; };
+		E3BF9C952B7A1C6500F2BE8B /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
+		E3BF9C982B7A1C8E00F2BE8B /* Capturable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capturable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,8 +60,9 @@
 		E3B6A2F02B6A32AA00C9B555 = {
 			isa = PBXGroup;
 			children = (
-				E30CF4532B74C7D200AB6B8F /* Extension */,
 				E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */,
+				E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */,
+				E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */,
 				E3B6A2FA2B6A32AA00C9B555 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -71,11 +78,11 @@
 		E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */ = {
 			isa = PBXGroup;
 			children = (
+				E3BF9C972B7A1C7F00F2BE8B /* Protocols */,
+				E30CF4532B74C7D200AB6B8F /* Extension */,
 				E3B6A31C2B6CF78D00C9B555 /* Model */,
 				E3B6A3172B6BBBA900C9B555 /* View */,
 				E3B6A3142B6BB9BB00C9B555 /* Controller */,
-				E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */,
-				E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */,
 				E3B6A3052B6A32B600C9B555 /* Assets.xcassets */,
 				E3B6A3072B6A32B600C9B555 /* LaunchScreen.storyboard */,
 				E3B6A30A2B6A32B600C9B555 /* Info.plist */,
@@ -88,7 +95,7 @@
 			children = (
 				E3B6A3002B6A32AA00C9B555 /* CameraViewController.swift */,
 				E3B6A31A2B6C07BC00C9B555 /* CaptureViewController.swift */,
-				E3B6A31D2B6CF90500C9B555 /* PhotoEditViewController.swift */,
+				E3B6A31D2B6CF90500C9B555 /* RepointViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -96,7 +103,7 @@
 		E3B6A3172B6BBBA900C9B555 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				E3B6A3152B6BBBA100C9B555 /* BottomStackView.swift */,
+				E32BE55F2B7B316D00F98601 /* CameraView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -104,8 +111,18 @@
 		E3B6A31C2B6CF78D00C9B555 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				E3BF9C952B7A1C6500F2BE8B /* CameraManager.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		E3BF9C972B7A1C7F00F2BE8B /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				E3BF9C982B7A1C8E00F2BE8B /* Capturable.swift */,
+				E3BB85482B7A90DE000D7E18 /* CameraManagerDelegate.swift */,
+			);
+			path = Protocols;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -179,12 +196,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B6A3012B6A32AA00C9B555 /* CameraViewController.swift in Sources */,
+				E3BF9C962B7A1C6500F2BE8B /* CameraManager.swift in Sources */,
 				E30CF4552B74C7E800AB6B8F /* UIImage+Extension.swift in Sources */,
+				E32BE5602B7B316D00F98601 /* CameraView.swift in Sources */,
 				E3B6A2FD2B6A32AA00C9B555 /* AppDelegate.swift in Sources */,
-				E3B6A3162B6BBBA100C9B555 /* BottomStackView.swift in Sources */,
 				E3B6A2FF2B6A32AA00C9B555 /* SceneDelegate.swift in Sources */,
 				E3B6A31B2B6C07BC00C9B555 /* CaptureViewController.swift in Sources */,
-				E3B6A31E2B6CF90500C9B555 /* PhotoEditViewController.swift in Sources */,
+				E3BF9C992B7A1C8E00F2BE8B /* Capturable.swift in Sources */,
+				E3BB85492B7A90DE000D7E18 /* CameraManagerDelegate.swift in Sources */,
+				E3B6A31E2B6CF90500C9B555 /* RepointViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

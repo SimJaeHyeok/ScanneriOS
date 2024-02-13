@@ -28,7 +28,7 @@ class CaptureViewController: UIViewController {
     }
     
     @objc func tapCutButton() {
-        let photoEditViewController = PhotoEditViewController()
+        let photoEditViewController = RepointViewController()
         self.navigationController?.pushViewController(photoEditViewController, animated: true)
     }
     
@@ -61,7 +61,7 @@ class CaptureViewController: UIViewController {
     }
     
     private func displayPhoto() {
-        guard let photo = CameraViewController.photoList.last else { return }
+        guard let photo = CameraViewController.croppedImageList.last else { return }
         photoView.image = photo
     }
 }
