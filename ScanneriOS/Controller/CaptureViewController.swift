@@ -17,6 +17,8 @@ class CaptureViewController: UIViewController {
         return photoView
     }()
     
+    private var rotateCount = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(photoView)
@@ -27,19 +29,38 @@ class CaptureViewController: UIViewController {
         displayPhoto()
     }
     
-    @objc func tapCutButton() {
+    @objc func cutButtonDidTap() {
         let photoEditViewController = RepointViewController()
         self.navigationController?.pushViewController(photoEditViewController, animated: true)
+    }
+    
+    @objc func rotateButtonDidTap() {
+        guard let photo = CameraViewController.croppedImageList.last else { return }
+        rotateCount += 1
+        
+        if rotateCount == 1 {
+            photoView.image = photo.rotate(degrees: 90)
+        } else if rotateCount == 2 {
+            photoView.image = photo.rotate(degrees: 180)
+        } else if rotateCount == 3 {
+            photoView.image = photo.rotate(degrees: 270)
+        } else if rotateCount == 4 {
+            photoView.image = photo
+            rotateCount = 0
+        }
     }
     
     func setupToolBarButton() {
         let deleteButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: nil)
         deleteButton.tintColor = .white
-        let completeButton = UIBarButtonItem(title: "반시계", style: .plain, target: self, action: nil)
+        
+        let completeButton = UIBarButtonItem(title: "반시계", style: .plain, target: self, action: #selector(rotateButtonDidTap))
         completeButton.tintColor = .white
+        
         let symbolConfiguration = UIImage.SymbolConfiguration(scale: .medium)
         let cropSymbol = UIImage(systemName: "scissors", withConfiguration: symbolConfiguration)?.withTintColor(.white, renderingMode: .alwaysOriginal)
-        let cutButton = UIBarButtonItem(image: cropSymbol, style: .done, target: self, action: #selector(tapCutButton))
+        let cutButton = UIBarButtonItem(image: cropSymbol, style: .done, target: self, action: #selector(cutButtonDidTap))
+        
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let barItems = [deleteButton, flexibleSpace, completeButton, flexibleSpace, cutButton]
 

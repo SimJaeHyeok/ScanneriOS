@@ -37,7 +37,7 @@ class CameraView: UIView {
         let scaleY = viewSize.height / imageSize.height
         
         let featurePoint = [feature.topLeft, feature.topRight, feature.bottomRight, feature.bottomLeft] .map {
-            var x = $0.x * scaleX
+            let x = $0.x * scaleX
             let y = viewSize.height - ($0.y * scaleY)
             
             return CGPoint(x: x, y: y)
