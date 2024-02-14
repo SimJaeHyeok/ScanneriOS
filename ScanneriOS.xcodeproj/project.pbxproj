@@ -61,8 +61,6 @@
 			isa = PBXGroup;
 			children = (
 				E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */,
-				E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */,
-				E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */,
 				E3B6A2FA2B6A32AA00C9B555 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -78,6 +76,8 @@
 		E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */ = {
 			isa = PBXGroup;
 			children = (
+				E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */,
+				E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */,
 				E3BF9C972B7A1C7F00F2BE8B /* Protocols */,
 				E30CF4532B74C7D200AB6B8F /* Extension */,
 				E3B6A31C2B6CF78D00C9B555 /* Model */,
