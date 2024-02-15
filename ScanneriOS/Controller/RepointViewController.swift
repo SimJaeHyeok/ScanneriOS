@@ -7,7 +7,7 @@
 
 import UIKit
 
-class RepointViewController: UIViewController {
+final class RepointViewController: UIViewController {
     
     private let backButton: UIButton = {
         let backButton = UIButton()
@@ -27,8 +27,8 @@ class RepointViewController: UIViewController {
         return checkButton
     }()
     
-    private let photoEditView: UIImageView = {
-        let photoEditView = UIImageView()
+    private let repointView: RepointView = {
+        let photoEditView = RepointView(frame: CGRect(origin: .zero, size: .zero))
         photoEditView.translatesAutoresizingMaskIntoConstraints = false
         return photoEditView
     }()
@@ -41,22 +41,23 @@ class RepointViewController: UIViewController {
         setupToolBarButton()
         setLayout()
         setConstraints()
+        repointView.addCircleView(wantCircleNumbers: 4)
     }
     
-    func setLayout() {
-        view.addSubview(photoEditView)
-        photoEditView.backgroundColor = .black
+    private func setLayout() {
+        view.addSubview(repointView)
+        repointView.image = CameraViewController.originalImageList.last
     }
     
-    func setConstraints() {
+   private func setConstraints() {
         NSLayoutConstraint.activate([
-            photoEditView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            photoEditView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            photoEditView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            photoEditView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            repointView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            repointView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            repointView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            repointView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
         ])
         guard let photo = CameraViewController.originalImageList.last else { return }
-        photoEditView.image = photo
+        repointView.image = photo
     }
     
     @objc func tapBackButton() {
@@ -64,7 +65,7 @@ class RepointViewController: UIViewController {
     }
     
     
-    func setupToolBarButton() {
+   private func setupToolBarButton() {
         let symbolConfiguration = UIImage.SymbolConfiguration(scale: .medium)
         let backSymbol = UIImage(systemName: "chevron.backward", withConfiguration: symbolConfiguration)?.withTintColor(.white, renderingMode: .alwaysOriginal)
         let backButton = UIBarButtonItem(image: backSymbol, style: .done, target: self, action: #selector(tapBackButton))

@@ -10,18 +10,18 @@ import UIKit
 class CaptureViewController: UIViewController {
 
     
-    private let photoView: UIImageView = {
-        let photoView = UIImageView()
-        photoView.translatesAutoresizingMaskIntoConstraints = false
-        photoView.backgroundColor = .black
-        return photoView
+    private let capturedImageView: UIImageView = {
+        let capturedImageView = UIImageView()
+        capturedImageView.translatesAutoresizingMaskIntoConstraints = false
+        capturedImageView.backgroundColor = .black
+        return capturedImageView
     }()
     
     private var rotateCount = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.addSubview(photoView)
+        view.addSubview(capturedImageView)
         view.backgroundColor = .gray
         navigationController?.isToolbarHidden = false
         setupToolBarButton()
@@ -39,13 +39,13 @@ class CaptureViewController: UIViewController {
         rotateCount += 1
         
         if rotateCount == 1 {
-            photoView.image = photo.rotate(degrees: 90)
+            capturedImageView.image = photo.rotate(degrees: 90)
         } else if rotateCount == 2 {
-            photoView.image = photo.rotate(degrees: 180)
+            capturedImageView.image = photo.rotate(degrees: 180)
         } else if rotateCount == 3 {
-            photoView.image = photo.rotate(degrees: 270)
+            capturedImageView.image = photo.rotate(degrees: 270)
         } else if rotateCount == 4 {
-            photoView.image = photo
+            capturedImageView.image = photo
             rotateCount = 0
         }
     }
@@ -74,15 +74,15 @@ class CaptureViewController: UIViewController {
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            photoView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            photoView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            photoView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            photoView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            capturedImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            capturedImageView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            capturedImageView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            capturedImageView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
     
     private func displayPhoto() {
         guard let photo = CameraViewController.croppedImageList.last else { return }
-        photoView.image = photo
+        capturedImageView.image = photo
     }
 }

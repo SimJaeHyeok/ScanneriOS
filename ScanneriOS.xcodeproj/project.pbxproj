@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E3091D502B7C862600E5EBD0 /* RepointView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3091D4F2B7C862600E5EBD0 /* RepointView.swift */; };
+		E3091D522B7C887600E5EBD0 /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3091D512B7C887600E5EBD0 /* CircleView.swift */; };
+		E3091D542B7D3FEC00E5EBD0 /* CircleViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3091D532B7D3FEC00E5EBD0 /* CircleViewDelegate.swift */; };
 		E30CF4552B74C7E800AB6B8F /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */; };
 		E32BE5602B7B316D00F98601 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32BE55F2B7B316D00F98601 /* CameraView.swift */; };
 		E3B6A2FD2B6A32AA00C9B555 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */; };
@@ -22,6 +25,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E3091D4F2B7C862600E5EBD0 /* RepointView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepointView.swift; sourceTree = "<group>"; };
+		E3091D512B7C887600E5EBD0 /* CircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
+		E3091D532B7D3FEC00E5EBD0 /* CircleViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewDelegate.swift; sourceTree = "<group>"; };
 		E30CF4542B74C7E800AB6B8F /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
 		E32BE55F2B7B316D00F98601 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		E3B6A2F92B6A32AA00C9B555 /* ScanneriOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanneriOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -76,13 +82,13 @@
 		E3B6A2FB2B6A32AA00C9B555 /* ScanneriOS */ = {
 			isa = PBXGroup;
 			children = (
+				E3B6A31C2B6CF78D00C9B555 /* Model */,
+				E3B6A3172B6BBBA900C9B555 /* View */,
+				E3B6A3142B6BB9BB00C9B555 /* Controller */,
 				E3B6A2FC2B6A32AA00C9B555 /* AppDelegate.swift */,
 				E3B6A2FE2B6A32AA00C9B555 /* SceneDelegate.swift */,
 				E3BF9C972B7A1C7F00F2BE8B /* Protocols */,
 				E30CF4532B74C7D200AB6B8F /* Extension */,
-				E3B6A31C2B6CF78D00C9B555 /* Model */,
-				E3B6A3172B6BBBA900C9B555 /* View */,
-				E3B6A3142B6BB9BB00C9B555 /* Controller */,
 				E3B6A3052B6A32B600C9B555 /* Assets.xcassets */,
 				E3B6A3072B6A32B600C9B555 /* LaunchScreen.storyboard */,
 				E3B6A30A2B6A32B600C9B555 /* Info.plist */,
@@ -104,6 +110,8 @@
 			isa = PBXGroup;
 			children = (
 				E32BE55F2B7B316D00F98601 /* CameraView.swift */,
+				E3091D4F2B7C862600E5EBD0 /* RepointView.swift */,
+				E3091D512B7C887600E5EBD0 /* CircleView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -121,6 +129,7 @@
 			children = (
 				E3BF9C982B7A1C8E00F2BE8B /* Capturable.swift */,
 				E3BB85482B7A90DE000D7E18 /* CameraManagerDelegate.swift */,
+				E3091D532B7D3FEC00E5EBD0 /* CircleViewDelegate.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -195,9 +204,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E3091D522B7C887600E5EBD0 /* CircleView.swift in Sources */,
 				E3B6A3012B6A32AA00C9B555 /* CameraViewController.swift in Sources */,
 				E3BF9C962B7A1C6500F2BE8B /* CameraManager.swift in Sources */,
 				E30CF4552B74C7E800AB6B8F /* UIImage+Extension.swift in Sources */,
+				E3091D542B7D3FEC00E5EBD0 /* CircleViewDelegate.swift in Sources */,
 				E32BE5602B7B316D00F98601 /* CameraView.swift in Sources */,
 				E3B6A2FD2B6A32AA00C9B555 /* AppDelegate.swift in Sources */,
 				E3B6A2FF2B6A32AA00C9B555 /* SceneDelegate.swift in Sources */,
@@ -205,6 +216,7 @@
 				E3BF9C992B7A1C8E00F2BE8B /* Capturable.swift in Sources */,
 				E3BB85492B7A90DE000D7E18 /* CameraManagerDelegate.swift in Sources */,
 				E3B6A31E2B6CF90500C9B555 /* RepointViewController.swift in Sources */,
+				E3091D502B7C862600E5EBD0 /* RepointView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

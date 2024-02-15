@@ -8,7 +8,7 @@
 import AVFoundation
 import UIKit
 
-class CameraView: UIView {
+final class CameraView: UIView {
     var videoPreviewLayer: AVCaptureVideoPreviewLayer!
     
     func drawRectangle(feature: CIRectangleFeature, imageSize: CGSize, viewSize: CGSize) {
@@ -47,4 +47,3 @@ class CameraView: UIView {
     }
     
 }
-

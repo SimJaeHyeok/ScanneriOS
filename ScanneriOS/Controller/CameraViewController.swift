@@ -9,29 +9,17 @@ import AVFoundation
 import CoreImage
 import UIKit
 
-class CameraViewController: UIViewController {
+final class CameraViewController: UIViewController {
     
     private let cameraView = CameraView()
-    
-//    private var captureSession: AVCaptureSession!
-//    private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
-//    private var photoOutput: AVCapturePhotoOutput!
-//    private var videoDataOutput: AVCaptureVideoDataOutput!
     private var cameraManager: Capturable!
-    
     static var croppedImageList: [UIImage] = []
     static var originalImageList: [UIImage] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        AVCaptureDevice.requestAccess(for: .video) { (result) in
-            if result {
-                print("권한 허용 카메라 실행")
-            } else {
-                print("권한이 없습니다. 카메라 접근 권한을 허용해주세요")
-            }
-        }
         view.backgroundColor = .gray
+        checkCameraAccess()
         cameraManager = CameraManager(delegate: self)
         setConstraints()
         setupToolBarButton()
@@ -41,6 +29,16 @@ class CameraViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.isToolbarHidden = false
+    }
+    
+    private func checkCameraAccess() {
+        AVCaptureDevice.requestAccess(for: .video) { (result) in
+            if result {
+                print("권한 허용 카메라 실행")
+            } else {
+                print("권한이 없습니다. 카메라 접근 권한을 허용해주세요")
+            }
+        }
     }
     
     @objc private func cameraButtonDidTap() {
@@ -59,7 +57,7 @@ class CameraViewController: UIViewController {
         self.navigationController?.navigationBar.tintColor = .white
     }
 
-    func setupToolBarButton() {
+   private func setupToolBarButton() {
         navigationController?.isToolbarHidden = false
         
         let previewButton = UIButton(type: .custom)
@@ -109,8 +107,6 @@ class CameraViewController: UIViewController {
         return feature
     }
     
-
-    
     private func getPrepectiveImage(ciImage: CIImage, feature: CIRectangleFeature) -> CIImage? {
         guard let perspectiveCorrection = CIFilter(name: "CIPerspectiveCorrection") else { return ciImage }
         perspectiveCorrection.setValue(CIVector(cgPoint: feature.topLeft), forKey: "inputTopLeft")
@@ -142,6 +138,7 @@ extension CameraViewController: CameraManagerDelegate {
             }
         }
     }
+    
     func displayRectangle(in image: CIImage) {
         guard let feature = detectRectangle(in: image) else { return }
         DispatchQueue.main.async { [weak self] in
@@ -150,6 +147,4 @@ extension CameraViewController: CameraManagerDelegate {
             self.cameraView.drawRectangle(feature: feature, imageSize: image.extent.size, viewSize: self.cameraView.bounds.size)
         }
     }
-    
-    
 }

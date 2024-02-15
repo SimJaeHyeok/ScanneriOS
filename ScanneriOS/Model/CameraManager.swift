@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import CoreImage
 
-class CameraManager: NSObject, Capturable {
+final class CameraManager: NSObject, Capturable {
     
     private var captureSession: AVCaptureSession!
     private var photoOutput: AVCapturePhotoOutput!
